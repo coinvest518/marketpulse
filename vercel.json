@@ -1,14 +1,4 @@
 {
   "buildCommand": "npm run build:client",
-  "outputDirectory": "dist/public",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "outputDirectory": "dist"
 }

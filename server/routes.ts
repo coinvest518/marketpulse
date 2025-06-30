@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { agentService } from "./services/agentService";
-import { insertKeywordSchema } from "@shared/schema";
+import { insertKeywordSchema } from "../shared/schema";
 import { z } from "zod";
 import { tavilyService } from "./services/tavilyService";
 import { mem0Service } from "./services/mem0Service";

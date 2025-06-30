@@ -68,7 +68,10 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // When the server is built, the output is in the 'dist' directory.
+  // The server script (dist/index.js) and the client assets (dist/assets, dist/index.html)
+  // are all in the same directory. `import.meta.dirname` will resolve to this 'dist' directory.
+  const distPath = path.resolve(import.meta.dirname);
 
   if (!fs.existsSync(distPath)) {
     throw new Error(

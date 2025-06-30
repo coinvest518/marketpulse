@@ -15,7 +15,7 @@ export default defineConfig({
   },
   build: {
     // The output directory is relative to the project root
-    outDir: '../dist/public',
+    outDir: '../dist',
     emptyOutDir: true,
   }
 })
