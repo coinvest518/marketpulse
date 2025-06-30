@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(220, 30%, 2%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(220, 25%, 8%);
+  --muted-foreground: hsl(220, 10%, 65%);
+  --popover: hsl(220, 30%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(220, 25%, 8%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(220, 20%, 15%);
+  --input: hsl(220, 25%, 8%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(220, 25%, 8%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(220, 25%, 10%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 50%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(262, 83%, 58%);
+  --radius: 0.75rem;
+  
+  /* Enhanced Cryptix-inspired colors */
+  --crypto-dark: hsl(220, 30%, 2%);
+  --crypto-surface: hsl(220, 25%, 8%);
+  --crypto-card: hsl(220, 20%, 12%);
+  --crypto-accent: hsl(262, 83%, 58%);
+  --crypto-violet: hsl(270, 95%, 75%);
+  --crypto-cyan: hsl(187, 96%, 50%);
+  --crypto-success: hsl(142, 76%, 36%);
+  --crypto-warning: hsl(45, 93%, 47%);
+  --crypto-error: hsl(0, 72%, 51%);
+  --crypto-blue: hsl(217, 91%, 60%);
+  --crypto-purple: hsl(262, 83%, 58%);
+  --crypto-pink: hsl(316, 70%, 68%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 3.7%, 15.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-crypto-dark text-foreground;
+    font-family: 'Inter', 'system-ui', 'sans-serif';
+  }
+}
+
+@layer utilities {
+  .bg-crypto-dark {
+    background-color: var(--crypto-dark);
+  }
+  
+  .bg-crypto-surface {
+    background-color: var(--crypto-surface);
+  }
+  
+  .bg-crypto-card {
+    background-color: var(--crypto-card);
+  }
+  
+  .text-crypto-accent {
+    color: var(--crypto-accent);
+  }
+  
+  .text-crypto-violet {
+    color: var(--crypto-violet);
+  }
+  
+  .text-crypto-cyan {
+    color: var(--crypto-cyan);
+  }
+  
+  .text-crypto-success {
+    color: var(--crypto-success);
+  }
+  
+  .text-crypto-warning {
+    color: var(--crypto-warning);
+  }
+  
+  .text-crypto-error {
+    color: var(--crypto-error);
+  }
+  
+  .text-crypto-blue {
+    color: var(--crypto-blue);
+  }
+  
+  .text-crypto-purple {
+    color: var(--crypto-purple);
+  }
+  
+  .text-crypto-pink {
+    color: var(--crypto-pink);
+  }
+  
+  .border-crypto-accent {
+    border-color: var(--crypto-accent);
+  }
+  
+  .border-crypto-success {
+    border-color: var(--crypto-success);
+  }
+  
+  .border-crypto-error {
+    border-color: var(--crypto-error);
+  }
+  
+  .border-crypto-warning {
+    border-color: var(--crypto-warning);
+  }
+  
+  .border-crypto-cyan {
+    border-color: var(--crypto-cyan);
+  }
+  
+  .border-crypto-blue {
+    border-color: var(--crypto-blue);
+  }
+  
+  .border-crypto-purple {
+    border-color: var(--crypto-purple);
+  }
+  
+  .border-crypto-pink {
+    border-color: var(--crypto-pink);
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 4s ease-in-out infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 5px hsla(249, 89%, 64%, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 20px hsla(249, 89%, 64%, 0.8);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+}

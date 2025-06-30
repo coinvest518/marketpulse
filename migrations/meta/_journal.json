@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1751251208253,
+      "tag": "0000_oval_loners",
+      "breakpoints": true
+    }
+  ]
+}

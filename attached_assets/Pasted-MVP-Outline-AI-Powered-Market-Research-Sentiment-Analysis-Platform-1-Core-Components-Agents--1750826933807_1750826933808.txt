@@ -1,0 +1,275 @@
+MVP Outline: AI-Powered Market Research & Sentiment Analysis Platform
+
+1. Core Components (Agents)
+
+The platform consists of four specialized AI agents:
+
+Crawler Agent
+
+
+
+
+
+Purpose: Fetch real-time data (e.g., mentions, articles, posts) based on user-specified keywords.
+
+
+
+Tool: Tavily (web crawling API).
+
+
+
+Functionality:
+
+
+
+
+
+Accept user keywords (e.g., "Brand X").
+
+
+
+Crawl web sources using Tavily’s API.
+
+
+
+Pass data to the Analyzer Agent.
+
+
+
+MVP Scope: Basic keyword-based crawling for recent data.
+
+Analyzer Agent
+
+
+
+
+
+Purpose: Perform sentiment analysis on crawled data (positive, negative, neutral).
+
+
+
+Tool: Open-source LLM (e.g., Hugging Face model) with Keywords AI for monitoring.
+
+
+
+Functionality:
+
+
+
+
+
+Receive data from Crawler Agent.
+
+
+
+Analyze sentiment using the LLM.
+
+
+
+Monitor performance with Keywords AI.
+
+
+
+Pass results to the Reporter Agent.
+
+
+
+MVP Scope: Simple sentiment classification.
+
+Reporter Agent
+
+
+
+
+
+Purpose: Compile sentiment results into reports and store them.
+
+
+
+Tool: Appwrite (cloud database and storage).
+
+
+
+Functionality:
+
+
+
+
+
+Receive sentiment data from Analyzer Agent.
+
+
+
+Store data in Appwrite’s database.
+
+
+
+Generate a basic report (e.g., sentiment percentages).
+
+
+
+MVP Scope: Store data and provide a summary report.
+
+Interface Agent
+
+
+
+
+
+Purpose: Provide a chat interface for user queries and insights.
+
+
+
+Tool: CopilotKit (conversational AI).
+
+
+
+Functionality:
+
+
+
+
+
+Handle queries like "What’s the sentiment for Brand X?"
+
+
+
+Retrieve data from Appwrite’s database.
+
+
+
+Respond conversationally.
+
+
+
+MVP Scope: Basic query handling for sentiment and reports.
+
+2. Supporting Features
+
+
+
+
+
+Memory Management:
+
+
+
+
+
+Tool: Mem0 (agent memory layer).
+
+
+
+Purpose: Store user preferences (e.g., keywords) for the Interface Agent.
+
+
+
+MVP Scope: Remember frequently used keywords.
+
+
+
+User Authentication:
+
+
+
+
+
+Tool: Appwrite (authentication).
+
+
+
+Purpose: Secure user access to data.
+
+
+
+MVP Scope: Basic login system.
+
+3. User Flow
+
+
+
+
+
+User logs in via Appwrite authentication.
+
+
+
+User inputs keywords to monitor.
+
+
+
+Crawler Agent fetches data using Tavily.
+
+
+
+Analyzer Agent processes data for sentiment.
+
+
+
+Reporter Agent stores results and generates a report.
+
+
+
+User queries the Interface Agent (e.g., "What’s the sentiment for Brand X?").
+
+
+
+Interface Agent retrieves and delivers the response.
+
+4. Technical Implementation
+
+
+
+
+
+Agent Communication: Sequential workflow (Crawler → Analyzer → Reporter; Interface queries database independently).
+
+
+
+Data Storage: Appwrite database for user data, crawled data (if needed), and reports.
+
+
+
+Deployment: Host on Appwrite’s cloud with a public URL.
+
+
+
+Frontend: Chat interface via CopilotKit.
+
+5. Development Timeline (4 Days)
+
+
+
+
+
+Day 1: Setup project, Appwrite auth, start Crawler Agent.
+
+
+
+Day 2: Finish Crawler, start Analyzer with LLM and Keywords AI.
+
+
+
+Day 3: Complete Analyzer, build Reporter with Appwrite.
+
+
+
+Day 4: Implement Interface Agent, test workflow, prepare demo.
+
+6. Key Features for MVP
+
+
+
+
+
+Real-time data crawling and sentiment analysis.
+
+
+
+Conversational interface for user insights.
+
+
+
+Secure user authentication and data storage.
+
+This MVP provides a complete, functional solution for the hackathon, showcasing a multi-agent system with practical market research capabilities.
