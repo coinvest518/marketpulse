@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 // Add CORS headers for Vercel
 // In production, restrict the origin to your frontend's domain for better security.
 const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://your-production-domain.vercel.app'] // Replace with your actual domain
+  ? ['https://marketpulse-gules.vercel.app']
   : ['*'];
 app.use((req, res, next) => {
     const origin = req.headers.origin;
