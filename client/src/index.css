@@ -62,9 +62,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  /* Removed @apply border-border; as border-border is not a valid Tailwind class. */
+  /* If you want a default border, use @apply border or specify a color like border-border/50 in components. */
+  /* You can add a default border style here if needed. */
+  /* * { @apply border; } */
 
   body {
     @apply font-sans antialiased bg-crypto-dark text-foreground;
