@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { insertKeywordSchema } from "../shared/schema";
 
 // For Vercel deployment, some services might not be available
@@ -9,12 +9,12 @@ let tavilyService: any;
 let mem0Service: any;
 
 try {
-  storage = (await import("../server/storage")).storage;
-  agentService = (await import("../server/services/agentService")).agentService;
-  tavilyService = (await import("../server/services/tavilyService")).tavilyService;
-  mem0Service = (await import("../server/services/mem0Service")).mem0Service;
+    storage = (await import("../server/storage")).storage;
+    agentService = (await import("../server/services/agentService")).agentService;
+    tavilyService = (await import("../server/services/tavilyService")).tavilyService;
+    mem0Service = (await import("../server/services/mem0Service")).mem0Service;
 } catch (error) {
-  console.warn("Some services failed to load:", error);
+    console.warn("Some services failed to load:", error);
 }
 
 const app = express();
@@ -23,40 +23,75 @@ app.use(express.urlencoded({ extended: false }));
 
 // Add CORS headers for Vercel
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
 });
 
-// Helper function to extract userId from Firebase token
-async function getUserIdFromToken(req: any): Promise<string> {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('No valid authorization header');
-  }
-
-  const idToken = authHeader.split('Bearer ')[1];
-  
-  // For demo purposes, check for dev token
-  if (idToken === 'dev-mock-token') {
-    return 'demo-user';
-  }
-  
-  const { auth } = await import('../server/firebaseAdmin');
-  const decodedToken = await auth.verifyIdToken(idToken);
-  
-  return decodedToken.uid;
+// Define a custom request type that includes the userId
+interface AuthenticatedRequest extends Request {
+    userId?: string;
 }
 
-// User routes - Firebase authentication validation
-app.get('/api/auth/user', async (req: any, res) => {
+// Authentication Middleware
+const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'No valid authorization header' });
+        }
+
+        const idToken = authHeader.split('Bearer ')[1];
+
+        // For demo purposes, check for dev token
+        if (idToken === 'dev-mock-token') {
+            req.userId = 'demo-user';
+            return next();
+        }
+
+        const { auth } = await import('../server/firebaseAdmin');
+        const decodedToken = await auth.verifyIdToken(idToken);
+        req.userId = decodedToken.uid;
+        next();
+    } catch (error) {
+        console.error("Authentication error:", error);
+        res.status(401).json({ message: "Authentication failed" });
+    }
+};
+
+// Optional Authentication Middleware for public/demo routes
+const optionalAuthenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // No token, just proceed without a userId for public access
+        return next();
+    }
+
+    try {
+        const idToken = authHeader.split('Bearer ')[1];
+
+        if (idToken === 'dev-mock-token') {
+            req.userId = 'demo-user';
+            return next();
+        }
+
+        const { auth } = await import('../server/firebaseAdmin');
+        const decodedToken = await auth.verifyIdToken(idToken);
+        req.userId = decodedToken.uid;
+        next();
+    } catch (error) {
+        // Token is present but invalid. Proceed without a user.
+        next();
+    }
+};
+
+app.get('/api/auth/user', async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -100,23 +135,23 @@ app.get('/api/auth/user', async (req: any, res) => {
 });
 
 // Keyword routes
-app.post('/api/keywords', async (req: any, res) => {
+app.post('/api/keywords', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!storage) {
       return res.status(503).json({ message: "Service temporarily unavailable" });
     }
     
-    const userId = await getUserIdFromToken(req);
+    // userId is now available from the middleware
     const keywordData = insertKeywordSchema.parse({
       ...req.body,
-      userId
+      userId: req.userId
     });
     
     const keyword = await storage.createKeyword(keywordData);
     
     // Start monitoring in the background (don't wait for completion)
     if (agentService) {
-      agentService.processKeywordMonitoring(userId, keyword.keyword).catch(console.error);
+      agentService.processKeywordMonitoring(req.userId, keyword.keyword).catch(console.error);
     }
     
     res.json(keyword);
@@ -126,29 +161,25 @@ app.post('/api/keywords', async (req: any, res) => {
   }
 });
 
-app.get('/api/keywords', async (req: any, res) => {
+app.get('/api/keywords', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!storage) {
       return res.json([]); // Return empty array if storage not available
     }
     
-    const userId = await getUserIdFromToken(req);
-    const keywords = await storage.getUserKeywords(userId);
+    const keywords = await storage.getUserKeywords(req.userId!);
     res.json(keywords);
   } catch (error) {
     console.error("Error fetching keywords:", error);
-    res.status(401).json({ message: "Authentication failed" });
+    res.status(500).json({ message: "Failed to fetch keywords" });
   }
 });
 
 // Mention routes
-app.get('/api/mentions', async (req: any, res) => {
+app.get('/api/mentions', optionalAuthenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    let userId;
-    try {
-      userId = await getUserIdFromToken(req);
-    } catch {
-      // For demo purposes, return sample data if not authenticated
+    if (!req.userId) {
+      // Return sample data for public/unauthenticated users
       return res.json([
         {
           id: 1,
@@ -167,29 +198,19 @@ app.get('/api/mentions', async (req: any, res) => {
       ]);
     }
     
-    if (!storage) {
-      // Return demo data if storage not available
-      return res.json([
-        {
-          id: 1,
-          content: "Demo: This platform provides excellent market insights!",
-          sentiment: "positive",
-          source: "Twitter",
-          createdAt: new Date().toISOString()
-        }
-      ]);
-    }
-    
+    if (!storage) return res.status(503).json({ message: "Service temporarily unavailable" });
+
     const limit = parseInt(req.query.limit as string) || 10;
-    const mentions = await storage.getUserMentions(userId, limit);
+    const mentions = await storage.getUserMentions(req.userId, limit);
     res.json(mentions);
   } catch (error) {
     console.error("Error fetching mentions:", error);
     res.status(500).json({ message: "Failed to fetch mentions" });
   }
 });
-
-app.get('/api/mentions/keyword/:keywordId', async (req: any, res) => {
+ 
+// This route should be authenticated to ensure users only see their own keyword mentions.
+app.get('/api/mentions/keyword/:keywordId', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!storage) {
       return res.json([]); // Return empty array if storage not available
@@ -197,6 +218,10 @@ app.get('/api/mentions/keyword/:keywordId', async (req: any, res) => {
     
     const keywordId = parseInt(req.params.keywordId);
     const limit = parseInt(req.query.limit as string) || 10;
+
+    // TODO: Add a check to verify req.userId owns this keywordId before fetching
+    // For now, we assume the request is valid if authenticated.
+
     const mentions = await storage.getMentionsByKeyword(keywordId, limit);
     res.json(mentions);
   } catch (error) {
@@ -206,13 +231,9 @@ app.get('/api/mentions/keyword/:keywordId', async (req: any, res) => {
 });
 
 // Analytics routes
-app.get('/api/analytics/sentiment', async (req: any, res) => {
+app.get('/api/analytics/sentiment', optionalAuthenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    let userId;
-    try {
-      userId = await getUserIdFromToken(req);
-    } catch {
-      // For demo purposes, return sample data if not authenticated
+    if (!req.userId) {
       return res.json({
         total: 150,
         positive: 85,
@@ -221,32 +242,19 @@ app.get('/api/analytics/sentiment', async (req: any, res) => {
       });
     }
     
-    if (!storage) {
-      // Return demo data if storage not available
-      return res.json({
-        total: 150,
-        positive: 85,
-        negative: 35,
-        neutral: 30
-      });
-    }
-    
+    if (!storage) return res.status(503).json({ message: "Service temporarily unavailable" });
+
     const keywordId = req.query.keywordId ? parseInt(req.query.keywordId as string) : undefined;
-    const stats = await storage.getSentimentStats(userId, keywordId);
+    const stats = await storage.getSentimentStats(req.userId, keywordId);
     res.json(stats);
   } catch (error) {
     console.error("Error fetching sentiment stats:", error);
     res.status(500).json({ message: "Failed to fetch sentiment stats" });
   }
 });
-
-app.get('/api/analytics/trending', async (req: any, res) => {
+app.get('/api/analytics/trending', optionalAuthenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    let userId;
-    try {
-      userId = await getUserIdFromToken(req);
-    } catch {
-      // For demo purposes, return sample data if not authenticated
+    if (!req.userId) {
       return res.json([
         { keyword: "AI", sentimentScore: 0.8, mentionCount: 45 },
         { keyword: "Machine Learning", sentimentScore: 0.7, mentionCount: 32 },
@@ -254,34 +262,25 @@ app.get('/api/analytics/trending', async (req: any, res) => {
       ]);
     }
     
-    if (!storage) {
-      // Return demo data if storage not available
-      return res.json([
-        { keyword: "AI", sentimentScore: 0.8, mentionCount: 45 },
-        { keyword: "Machine Learning", sentimentScore: 0.7, mentionCount: 32 },
-        { keyword: "Technology", sentimentScore: 0.6, mentionCount: 28 }
-      ]);
-    }
-    
-    const trending = await storage.getTrendingKeywords(userId);
+    if (!storage) return res.status(503).json({ message: "Service temporarily unavailable" });
+
+    const trending = await storage.getTrendingKeywords(req.userId);
     res.json(trending);
   } catch (error) {
     console.error("Error fetching trending keywords:", error);
     res.status(500).json({ message: "Failed to fetch trending keywords" });
   }
 });
-
 // Chat routes
-app.post('/api/chat', async (req: any, res) => {
+app.post('/api/chat', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = 'demo-user'; // In production, get from Firebase token
     const { message } = req.body;
     
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ message: "Message is required" });
     }
     
-    const response = await agentService.processUserQuery(userId, message);
+    const response = await agentService.processUserQuery(req.userId, message);
     res.json({ response });
   } catch (error) {
     console.error("Error processing chat:", error);
@@ -289,18 +288,14 @@ app.post('/api/chat', async (req: any, res) => {
   }
 });
 
-app.get('/api/chat/history', async (req: any, res) => {
+app.get('/api/chat/history', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    let userId;
-    try {
-      userId = await getUserIdFromToken(req);
-    } catch {
-      // For demo purposes, return empty array if not authenticated
+    if (!storage) {
       return res.json([]);
     }
-    
+
     const limit = parseInt(req.query.limit as string) || 20;
-    const history = await storage.getUserChatHistory(userId, limit);
+    const history = await storage.getUserChatHistory(req.userId!, limit);
     res.json(history.reverse()); // Return in chronological order
   } catch (error) {
     console.error("Error fetching chat history:", error);
@@ -309,9 +304,8 @@ app.get('/api/chat/history', async (req: any, res) => {
 });
 
 // Test integration endpoint
-app.post('/api/test-integration', async (req: any, res) => {
+app.post('/api/test-integration', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = 'demo-user';
     const { keyword = "OpenAI" } = req.body;
 
     console.log(`Testing API integration for keyword: ${keyword}`);
@@ -321,7 +315,7 @@ app.post('/api/test-integration', async (req: any, res) => {
     console.log(`Tavily found ${tavilyResults.length} results`);
 
     // Test Mem0 API
-    const memoryAdded = await mem0Service.addMemory(userId, `Testing integration with keyword: ${keyword}`);
+    const memoryAdded = await mem0Service.addMemory(req.userId, `Testing integration with keyword: ${keyword}`);
     console.log(`Mem0 memory added: ${memoryAdded}`);
 
     // Test OpenAI sentiment analysis
