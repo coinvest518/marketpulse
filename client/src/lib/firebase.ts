@@ -10,14 +10,23 @@ import {
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyARpvrTagR2d-Lgz5ySCo466XI6nP_YJZs",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "marketsentiment-c1c5e.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "marketsentiment-c1c5e",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "marketsentiment-c1c5e.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "158454103325",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:158454103325:web:90ff5a5fb2ad08552435f4",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-LGRLYXL0Q5"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
+
+// Validate Firebase configuration
+const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+const missingKeys = requiredKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig]);
+
+if (missingKeys.length > 0) {
+  console.warn('Missing Firebase configuration keys:', missingKeys);
+  console.warn('Firebase functionality may be limited. Please set all VITE_FIREBASE_* environment variables.');
+}
 
 // Initialize Firebase
 let app;
@@ -25,15 +34,20 @@ let firebaseAuth;
 let firebaseAnalytics;
 
 try {
-  app = initializeApp(firebaseConfig);
-  firebaseAuth = getAuth(app);
-  
-  // Only initialize analytics in browser environment
-  if (typeof window !== 'undefined') {
-    firebaseAnalytics = getAnalytics(app);
+  // Only initialize if we have the required configuration
+  if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
+    app = initializeApp(firebaseConfig);
+    firebaseAuth = getAuth(app);
+    
+    // Only initialize analytics in browser environment
+    if (typeof window !== 'undefined') {
+      firebaseAnalytics = getAnalytics(app);
+    }
+    
+    console.log('Firebase initialized successfully with project:', firebaseConfig.projectId);
+  } else {
+    console.warn('Firebase not initialized due to missing configuration');
   }
-  
-  console.log('Firebase initialized successfully with project:', firebaseConfig.projectId);
 } catch (error) {
   console.error('Firebase initialization failed:', error);
   console.log('Using config:', firebaseConfig);

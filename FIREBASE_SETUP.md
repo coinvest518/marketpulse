@@ -29,7 +29,7 @@ To use Firebase Admin features in production:
 Your `.env` file has these Firebase settings:
 - Project ID: `marketsentiment-c1c5e`
 - Auth Domain: `marketsentiment-c1c5e.firebaseapp.com`
-- API Key: `AIzaSyARpvrTagR2d-Lgz5ySCo466XI6nP_YJZs`
+- API Key: `[Set via VITE_FIREBASE_API_KEY environment variable]`
 
 ## Debugging
 Check the browser console for detailed error messages when clicking the login button.
