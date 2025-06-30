@@ -210,7 +210,12 @@ export class DatabaseStorage implements IStorage {
       total: 0,
     };
 
-    results.forEach(result => {
+    interface SentimentStatsResult {
+      sentiment: "positive" | "negative" | "neutral";
+      count: number;
+    }
+
+    results.forEach((result: SentimentStatsResult) => {
       stats[result.sentiment as keyof typeof stats] = result.count;
       stats.total += result.count;
     });
@@ -236,7 +241,19 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(count(mentions.id)))
       .limit(10);
 
-    return results.map(result => ({
+    interface TrendingKeywordResult {
+      keyword: string;
+      mentionCount: number;
+      avgSentimentScore: number | null;
+    }
+
+    interface TrendingKeyword {
+      keyword: string;
+      mentionCount: number;
+      sentimentScore: number;
+    }
+
+    return results.map((result: TrendingKeywordResult): TrendingKeyword => ({
       keyword: result.keyword,
       mentionCount: result.mentionCount,
       sentimentScore: Number(result.avgSentimentScore) || 0,
