@@ -15,7 +15,7 @@ import {
   type ChatMessage,
   type InsertChatMessage,
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db_neon";
 import { eq, desc, and, gte, count, avg, sql } from "drizzle-orm";
 
 export interface IStorage {

@@ -64,7 +64,7 @@ Provide insights[], recommendations[], reasoning, and confidence (0-1) in JSON f
         throw new Error(`CopilotKit API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { choices: { message: { content: string } }[] };
       const content = result.choices[0].message.content;
       
       try {
@@ -133,7 +133,7 @@ Provide: response (direct answer), suggestions[] (helpful next steps), actions[]
         throw new Error(`CopilotKit API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { choices: { message: { content: string } }[] };
       const content = result.choices[0].message.content;
       
       try {
@@ -212,7 +212,7 @@ Respond in JSON format with: summary, keyFindings[], strategicRecommendations[],
         throw new Error(`Claude API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { content: { text: string }[] };
       const content = result.content[0].text;
       
       try {

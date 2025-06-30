@@ -66,5 +66,10 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    log(`\n🚀 Server ready!`);
+    log(`📱 Local:            http://localhost:${port}`);
+    log(`🌐 Network:          http://0.0.0.0:${port}`);
+    log(`🔧 Environment:      ${app.get("env") || "development"}`);
+    log(`\n🎯 API endpoints available at http://localhost:${port}/api/`);
   });
 })();

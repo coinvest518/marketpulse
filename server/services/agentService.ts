@@ -38,6 +38,7 @@ export class AgentService {
         mentions.push({
           keywordId: targetKeyword.id,
           userId,
+          title: result.title || keyword, // Use result.title if available, fallback to keyword
           source,
           content: result.content.slice(0, 500), // Limit content length
           url: result.url,
@@ -143,7 +144,7 @@ export class AgentService {
       negativeSentiment: (stats.negative / total) * 100,
       neutralSentiment: (stats.neutral / total) * 100,
       totalMentions: stats.total,
-      insights: combinedInsights,
+      insights: JSON.stringify(combinedInsights),
     };
   }
   
@@ -205,7 +206,7 @@ export class AgentService {
       userId,
       message,
       response,
-      context,
+      context: JSON.stringify(context),
     });
     
     return response;

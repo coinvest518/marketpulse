@@ -25,7 +25,6 @@ import {
   Bell,
   Settings,
   FileText,
-  LogOut,
   Send
 } from "lucide-react";
 import ChatInterface from "@/components/chat-interface";
@@ -38,23 +37,16 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [chatInput, setChatInput] = useState("");
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !user) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [user, isLoading, toast]);
+  // Define the type for sentiment stats
+  type SentimentStats = {
+    total: number;
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
 
   // Fetch dashboard data
-  const { data: sentimentStats, isLoading: statsLoading } = useQuery({
+  const { data: sentimentStats, isLoading: statsLoading } = useQuery<SentimentStats>({
     queryKey: ["/api/analytics/sentiment"],
     enabled: !!user,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -105,10 +97,6 @@ export default function Dashboard() {
     },
   });
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
-  };
-
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (chatInput.trim()) {
@@ -116,7 +104,7 @@ export default function Dashboard() {
     }
   };
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-crypto-dark flex items-center justify-center">
         <div className="w-16 h-16 bg-gradient-to-r from-crypto-accent to-crypto-violet rounded-full flex items-center justify-center animate-pulse">
@@ -156,25 +144,17 @@ export default function Dashboard() {
             </Button>
             <div className="flex items-center space-x-2">
               <Avatar className="w-8 h-8">
-                {user.profileImageUrl ? (
+                {user && user.profileImageUrl ? (
                   <AvatarImage src={user.profileImageUrl} alt={user.firstName || "User"} />
                 ) : (
                   <AvatarFallback className="bg-gradient-to-r from-crypto-cyan to-crypto-violet">
-                    {(user.firstName?.[0] || user.email?.[0] || "U").toUpperCase()}
+                    {(user?.firstName?.[0] || user?.email?.[0] || "U").toUpperCase()}
                   </AvatarFallback>
                 )}
               </Avatar>
               <span className="text-sm font-medium">
-                {user.firstName || user.email}
+                {user?.firstName || user?.email}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-gray-400 hover:text-white"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
             </div>
           </div>
         </div>
@@ -344,7 +324,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {trendingKeywords?.slice(0, 5).map((keyword, index) => (
+                  {(Array.isArray(trendingKeywords) ? trendingKeywords : []).slice(0, 5).map((keyword, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <span className="text-sm">{keyword.keyword}</span>
                       <div className="flex items-center space-x-2">
@@ -359,7 +339,8 @@ export default function Dashboard() {
                         </span>
                       </div>
                     </div>
-                  )) || (
+                  ))}
+                  {(!Array.isArray(trendingKeywords) || trendingKeywords.length === 0) && (
                     <p className="text-gray-400 text-sm">No trending keywords yet</p>
                   )}
                 </div>

@@ -35,12 +35,40 @@ export default function UltraModernLanding() {
 
   const handleLogin = async () => {
     try {
+      console.log('Starting Google sign-in...');
       const { signInWithGoogle } = await import('@/lib/firebase');
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      console.log('Sign-in successful:', result.user?.email);
       // User will be redirected automatically by the auth state change
     } catch (error) {
       console.error('Error signing in:', error);
+      // Show more detailed error information
+      if (error instanceof Error) {
+        alert(`Sign-in failed: ${error.message}\n\nPlease check the FIREBASE_SETUP.md file for setup instructions.`);
+      } else {
+        alert('Sign-in failed. Please check your Firebase configuration in FIREBASE_SETUP.md');
+      }
     }
+  };
+
+  // Development mode login bypass (remove in production)
+  const handleDevLogin = () => {
+    console.log('Using development mode login...');
+    // Create a mock user for development
+    const mockUser = {
+      id: 'dev-user-123',
+      email: 'developer@example.com',
+      firstName: 'Dev',
+      lastName: 'User',
+      profileImageUrl: 'https://via.placeholder.com/150'
+    };
+    
+    // Store mock token
+    localStorage.setItem('firebase_token', 'dev-mock-token');
+    localStorage.setItem('dev_user', JSON.stringify(mockUser));
+    
+    // Reload to trigger auth state change
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -725,6 +753,15 @@ export default function UltraModernLanding() {
               className="px-12 py-6 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full font-bold text-lg tracking-wide hover:shadow-2xl transition-all duration-300"
             >
               Start Your AI Journey
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDevLogin}
+              className="px-8 py-4 rounded-full font-medium text-sm tracking-wide border border-orange-500/50 text-orange-400 hover:border-orange-500 hover:bg-orange-500/10 transition-all duration-300"
+            >
+              🚧 Dev Login (Testing)
             </motion.button>
 
             <motion.button
