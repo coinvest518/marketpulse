@@ -356,5 +356,5 @@ app.post('/api/test-integration', async (req: any, res) => {
   }
 });
 
-// Export for Vercel
+// Export for Vercel serverless functions
 export default app;
