@@ -22,8 +22,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Add CORS headers for Vercel
+// In production, restrict the origin to your frontend's domain for better security.
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://your-production-domain.vercel.app'] // Replace with your actual domain
+  : ['*'];
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    if (origin && (allowedOrigins.includes(origin) || allowedOrigins.includes('*'))) {
+        res.header('Access-Control-Allow-Origin', origin);
+    }
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     
@@ -219,8 +226,14 @@ app.get('/api/mentions/keyword/:keywordId', authenticateUser, async (req: Authen
     const keywordId = parseInt(req.params.keywordId);
     const limit = parseInt(req.query.limit as string) || 10;
 
-    // TODO: Add a check to verify req.userId owns this keywordId before fetching
-    // For now, we assume the request is valid if authenticated.
+    // Security Check: Verify the user owns the keyword.
+    const keyword = await storage.getKeywordById(keywordId);
+
+    // If the keyword doesn't exist or doesn't belong to the user, return 404.
+    // This prevents leaking information about which keyword IDs are valid.
+    if (!keyword || keyword.userId !== req.userId) {
+      return res.status(404).json({ message: "Keyword not found" });
+    }
 
     const mentions = await storage.getMentionsByKeyword(keywordId, limit);
     res.json(mentions);

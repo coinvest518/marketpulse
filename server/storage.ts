@@ -14,7 +14,7 @@ import {
   type InsertReport,
   type ChatMessage,
   type InsertChatMessage,
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db_neon";
 import { eq, desc, and, gte, count, avg, sql } from "drizzle-orm";
 
@@ -26,6 +26,7 @@ export interface IStorage {
   // Keyword operations
   createKeyword(keyword: InsertKeyword): Promise<Keyword>;
   getUserKeywords(userId: string): Promise<Keyword[]>;
+  getKeywordById(id: number): Promise<Keyword | undefined>;
   updateKeywordStatus(id: number, isActive: boolean): Promise<void>;
   
   // Mention operations
@@ -94,6 +95,15 @@ export class DatabaseStorage implements IStorage {
       .from(keywords)
       .where(eq(keywords.userId, userId))
       .orderBy(desc(keywords.createdAt));
+  }
+
+  async getKeywordById(id: number): Promise<Keyword | undefined> {
+    const [keyword] = await db
+      .select()
+      .from(keywords)
+      .where(eq(keywords.id, id))
+      .limit(1);
+    return keyword;
   }
 
   async updateKeywordStatus(id: number, isActive: boolean): Promise<void> {

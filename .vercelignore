@@ -13,7 +13,6 @@ yarn-error.log*
 
 # Development files
 server/index.ts
-client/src
 *.log
 
 # Build artifacts

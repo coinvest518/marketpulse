@@ -17,9 +17,9 @@ import {
 
 export default function UltraModernLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState(0)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isLoaded, setIsLoaded] = useState(false)
+  const [activeSection, setActiveSection] = useState<number | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll()
@@ -110,17 +110,6 @@ export default function UltraModernLanding() {
     },
   }
 
-  const floatingVariants = {
-    animate: {
-      y: [-10, 10, -10],
-      rotate: [-2, 2, -2],
-      transition: {
-        duration: 6,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: "easeInOut",
-      },
-    },
-  }
 
   if (!isLoaded) {
     return (
@@ -149,6 +138,8 @@ export default function UltraModernLanding() {
               `,
               backgroundSize: "50px 50px",
               transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
+              backgroundPositionY: backgroundY.get(),
+              scale: scaleProgress.get(),
             }}
           />
         </div>
@@ -237,15 +228,16 @@ export default function UltraModernLanding() {
                 <motion.a
                   key={item}
                   href="#"
-                  className="relative group text-white/80 hover:text-white transition-all duration-300 font-medium text-[15px] tracking-wide"
+                  className={`relative group text-white/80 hover:text-white transition-all duration-300 font-medium text-[15px] tracking-wide ${activeSection === index ? 'text-white' : ''}`}
                   whileHover={{ y: -2 }}
                   onHoverStart={() => setActiveSection(index)}
+                  onMouseLeave={() => setActiveSection(null)}
                 >
                   <span className="relative z-10">{item}</span>
                   <motion.div
                     className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400 origin-left"
                     initial={{ scaleX: 0 }}
-                    whileHover={{ scaleX: 1 }}
+                    animate={{ scaleX: activeSection === index ? 1 : 0 }}
                     transition={{ duration: 0.3 }}
                   />
                   <motion.div
