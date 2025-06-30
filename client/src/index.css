@@ -74,6 +74,9 @@
 }
 
 @layer utilities {
+  .text-foreground {
+    color: var(--foreground);
+  }
   .bg-crypto-dark {
     background-color: var(--crypto-dark);
   }
