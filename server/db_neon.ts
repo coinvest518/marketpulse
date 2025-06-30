@@ -8,7 +8,6 @@ config({ path: ".env" });
 
 // Environment-based configuration
 const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
 
 let db: any;
 

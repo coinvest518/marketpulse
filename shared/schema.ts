@@ -5,7 +5,6 @@ import {
   real,
 } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // User storage table

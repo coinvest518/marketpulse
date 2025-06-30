@@ -73,7 +73,7 @@ const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: 
 };
 
 // Optional Authentication Middleware for public/demo routes
-const optionalAuthenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const optionalAuthenticateUser = async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         // No token, just proceed without a userId for public access

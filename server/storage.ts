@@ -16,7 +16,7 @@ import {
   type InsertChatMessage,
 } from "../shared/schema";
 import { db } from "./db_neon";
-import { eq, desc, and, gte, count, avg, sql } from "drizzle-orm";
+import { eq, desc, and, count, avg } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
